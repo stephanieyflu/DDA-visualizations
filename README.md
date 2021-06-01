@@ -1,1 +1,1 @@
-# SicknessMiner-
+# SicknessMiner

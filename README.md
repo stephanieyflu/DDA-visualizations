@@ -126,17 +126,6 @@ unzip NEN_SicknessMiner.zip
 rm NEN_SicknessMiner.zip
 ```
 
-NER:
-https://ndownloader.figshare.com/files/28278432?private_link=04259fac69da301680c2
-
-NEN:
-https://ndownloader.figshare.com/files/28278168?private_link=04259fac69da301680c2
-
-
-Then 
-
-Then, place the folder `models` under the root directory of this repository.
-
 The NER model derived from the BioBERT models, which was a courtesy of the 
 U.S. National Library of Medicine and can be found at 
 https://github.com/dmis-lab/biobert

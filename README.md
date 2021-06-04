@@ -2,23 +2,23 @@
 
 ## Installation
 
-In order to install this system, the user need two different python 
-environments: a python 3.5 environment for NormCo; and a Python 3.7 
+In order to install this system, the user needs two different python 
+environments: a python 3.5 environment for NormCo, and a Python 3.7 
 environment for SicknessMiner.
 
-We suggest the use of [Anaconda3](https://www.anaconda.com), in order to 
-create both environment without change a possible existing environment in 
+We suggest the use of [Anaconda3](https://www.anaconda.com) in order to 
+create both environments without changing a possible existing environment in 
 the host machine.
 
-In the following instructions, we assume the user have already cloned this 
-repository and is in this repository directory.
+In the following instructions, we assume the user has already cloned this 
+repository and it is in this repository directory.
 
 ### NormCo Installation
 
-Install [NormCo](https://github.com/IBM/aihn-ucsd) following the instruction,
+Install [NormCo](https://github.com/IBM/aihn-ucsd) following the instruction
 in their github page.
 
-We also add the instructions to install NormCo herein, in order to make this 
+We also listed the instructions to install NormCo herein, in order to make this 
 README self-contained.
 
 #### Steps
@@ -57,7 +57,7 @@ which python
 conda deactivate
 ```
 
-After installing NormCo, we can place it in the SicknessMiner directory. 
+After installing NormCo, we should place it in the SicknessMiner directory. 
 
 ```
 # Moving to SicknessMiner parent directory
@@ -126,7 +126,7 @@ unzip NEN_SicknessMiner.zip
 rm NEN_SicknessMiner.zip
 ```
 
-The NER model derived from the BioBERT models, which was a courtesy of the 
+The NER model was derived from the BioBERT models, which was a courtesy of the 
 U.S. National Library of Medicine and can be found at 
 https://github.com/dmis-lab/biobert
 
@@ -137,7 +137,7 @@ the root directory of this repository.
 
 The input files to SicknessMiner should be in 
 [PubTator](https://www.ncbi.nlm.nih.gov/CBBresearch/Lu/Demo/tmTools/Format.html)
-format, there must be, at least, a blank line between the articles.
+format, ad there must be, at least, a blank line between the articles.
 
 ```
 # Activating conda environment

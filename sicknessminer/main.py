@@ -37,7 +37,7 @@ bert.loader.trace = lambda *a, **k: None
 from sicknessminer.pubtator import normco2pubtator
 from sicknessminer.pubtator.conll2pubtator import ConllIterator, \
     build_state_machine
-from sicknessminer.pubtator.utils import PubTatorIterator
+from sicknessminer.pubtator.utils import PubTatorIterator, RawTextToPubTator
 from sicknessminer.util import split_sentences
 
 CLASS_NAME = "Disease"
@@ -107,7 +107,14 @@ def create_arguments_parser():
 
     parser.add_argument(
         "files", metavar="FILES", type=str, nargs="*",
-        help="1) the PubTator file(s); 3) the output file.")
+        help="1) the input file(s); 2) the output file.")
+
+    parser.add_argument('--raw', '-r', dest='raw',
+                        action="store_true",
+                        help="If set, the input files are treated as raw text "
+                             "files. Otherwise, they are treated as "
+                             "files in the PubTator format.")
+    parser.set_defaults(raw=False)
 
     return parser
 
@@ -284,7 +291,7 @@ def write_normco_entry(pubtator_entry, writer):
     writer.write("\n")
 
 
-def main(input_paths, output_path):
+def main(input_paths, output_path, raw=False):
     """
     The main method.
 
@@ -318,7 +325,12 @@ def main(input_paths, output_path):
     normco_input_file = open(normco_input_filepath, "w")
     normco_input_file.write(NORMCO_HEADER)
     try:
-        for pubtator_entry in PubTatorIterator(input_paths):
+        if raw:
+            iterator = RawTextToPubTator(input_paths)
+        else:
+            iterator = PubTatorIterator(input_paths)
+
+        for pubtator_entry in iterator:
             sentences = [tokenizer.tokenize(pubtator_entry.title)]
 
             sentences.extend(map(lambda x: tokenizer.tokenize(x),
@@ -370,4 +382,5 @@ if __name__ == '__main__':
 
     input_files = arguments.files[:-1]
     output_file = arguments.files[-1]
-    main(input_files, output_file)
+    raw_files = arguments.raw
+    main(input_files, output_file, raw=raw_files)

@@ -206,3 +206,60 @@ def read_pubtator_entry(input_stream: TextIO) -> Optional[PubTatorEntry]:
     except StopIteration:
         pass
     return entry
+
+
+class RawTextToPubTator(Iterator[PubTatorEntry]):
+    """
+    Iterates over a raw text files and generates PubTator entries.
+    """
+
+    def __init__(self, file_paths, initial_index=0):
+        """
+        Creates an iterator of PubTatorEntry(s), read from a list of raw
+        text files.
+
+        :param file_paths: The paths to the PubTator files
+        :type file_paths: List[str] or str
+        :param initial_index: the initial index
+        :type initial_index: int
+        """
+        if isinstance(file_paths, list) or isinstance(file_paths, tuple):
+            if len(file_paths) > 1:
+                self.input_files = \
+                    itertools.chain.from_iterable(
+                        map(lambda x: open(x), file_paths))
+            else:
+                self.input_files = open(file_paths[0])
+        else:
+            self.input_files = open(file_paths)
+        self.index = initial_index
+
+    def __next__(self) -> PubTatorEntry:
+        current_value = ""
+        try:
+            for line in self.input_files:
+                line = line.strip()
+                if line == "":
+                    if current_value != "":
+                        entry = PubTatorEntry(
+                            str(self.index), "", current_value.strip(), [])
+                        self.index += 1
+                        return entry
+                    continue
+                current_value += line + " "
+        except StopIteration as e:
+            if current_value == "":
+                raise e
+            else:
+                entry = PubTatorEntry(
+                    str(self.index), "", current_value.strip(), [])
+                self.index += 1
+                return entry
+
+        if current_value != "":
+            entry = PubTatorEntry(
+                str(self.index), "", current_value.strip(), [])
+            self.index += 1
+            return entry
+        else:
+            raise StopIteration()

@@ -179,6 +179,22 @@ The `example/input.txt` contains the first abstract from the train file
 obtained from the 
 [NCBI Disease dataset](https://www.ncbi.nlm.nih.gov/CBBresearch/Dogan/DISEASE/). 
 
+If one wants to use raw text files as input, he/she can do so by passing the 
+--raw/-r alongside the input arguments, as shown in example below: 
+
+```
+python sicknessminer/main.py --raw example/input_raw.txt example/output_raw.txt
+```
+
+or
+
+```
+python sicknessminer/main.py -r example/input_raw.txt example/output_raw.txt
+```
+
+The `example/output_raw.txt` file should be equal to the 
+`example/expected_raw.txt` file.
+
 ## Clean
 
 Unsuccessful runs of the system might create temporary files in the `tmp` 

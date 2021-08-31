@@ -211,6 +211,39 @@ In order to clean those files, use the command:
 rm -rf tmp/
 ```
 
+## Results
+
+The directory `results` contains the results from the analysis presented in our 
+paper mentioned above.
+
+The files `SicknessMiner.tsv` and `DisGeNET.tsv` shows the diseases related
+to the target Blood Cancer diseases (BCs). The diseases in the
+`SicknessMiner.tsv` file are sorted by the number of co-mentions between them
+and the target disease, in a descending order. Whereas the diseases in the 
+`DisGeNET.tsv` file are sorted by the Jaccard index between the set of genes 
+related to the target disease and the set of genes related to the associated 
+disease, in a descending order.
+
+The meaning of the columns are described below.
+
+For the `SicknessMiner.tsv`:
+1. Index_disease: the name of the target BC disease;
+2. Index_disease_id: the MeSH code of the target BC disease;
+3. Associated_disease: the name of the associated disease;
+4. Associated_disease_id: the MeSH code of the associated disease;
+5. Co-mentions: the number of co-mentions between the target and the 
+   associated disease.
+
+For the `DisGeNET.tsv`:
+1. Index_disease: the name of the target BC disease;
+2. Index_disease_id: the UMLS CUI code of the target BC disease;
+3. Associated_disease: the name of the associated disease;
+4. Associated_disease_id: the UMLS CUI code of the associated disease;
+5. Jaccard_index: the Jaccard index between the set of genes related to the 
+   target disease and the set of genes related to the associated disease;
+6. MESH_id: the MeSH id of the associated disease, if known;
+7. OMIN_id: the OMIN id of the associated disease, if known.
+
 ## Resources
 
 SicknessMiner has two main models, the NER which uses a BioBERT model and 

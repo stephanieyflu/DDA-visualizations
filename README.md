@@ -2,7 +2,7 @@
 
 ## Citation
 
-Streamlining Disease-Disease Associations Using a Deep-Learning-driven Text-Mining Approach
+SicknessMiner: a deep-learning-driven text-mining tool to abridge disease-disease associations
 Nícia Rosário-Ferreira 1,2,⤉*, Victor Guimarães 3,4,⤉, Vitor S. Costa 3,4, Irina S. Moreira 5,6 - 2021, Submitted.
 
 ## Installation

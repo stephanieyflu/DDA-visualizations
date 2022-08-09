@@ -1,0 +1,10 @@
+0,760,782,Neurological disorders,Disease,MESH:D009422
+0,791,799,epilepsy,Disease,MESH:D004827
+0,801,820,Parkinson's disease,Disease,MESH:D010300
+0,822,824,PD,Disease,OMIM:168600
+0,827,846,Alzheimer's disease,Disease,MESH:D000544
+0,848,850,AD,Disease,MESH:D000544
+0,857,867,depression,Disease,MESH:D003866
+0,983,1004,neurological diseases,Disease,MESH:D009422
+0,1228,1250,neurological disorders,Disease,MESH:D009422
+

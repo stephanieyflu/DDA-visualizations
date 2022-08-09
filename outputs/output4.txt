@@ -1,0 +1,9 @@
+0,254,282,endoplasmic reticulum stress,Disease,<unk>
+0,284,287,ERS,Disease,MESH:D030342
+0,475,497,neurological disorders,Disease,MESH:D009422
+0,506,523,cerebral ischemia,Disease,MESH:D002545
+0,525,544,Parkinson's disease,Disease,MESH:D010300
+0,546,565,Alzheimer's disease,Disease,MESH:D000544
+0,571,591,Huntington's disease,Disease,MESH:D006816
+0,684,705,neurological diseases,Disease,MESH:D009422
+

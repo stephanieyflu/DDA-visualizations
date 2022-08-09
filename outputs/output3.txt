@@ -1,0 +1,8 @@
+0,140,142,PD,Disease,OMIM:168600
+0,149,187,progressive neurodegenerative disorder,Disease,MESH:D020271
+0,206,225,Alzheimer's disease,Disease,MESH:D000544
+0,278,280,PD,Disease,OMIM:168600
+0,376,402,neurodegenerative diseases,Disease,MESH:D019636
+0,450,474,cerebrovascular diseases,Disease,MESH:D002561
+0,611,613,PD,Disease,OMIM:168600
+

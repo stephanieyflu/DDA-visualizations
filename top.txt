@@ -1,0 +1,5 @@
+alzheimer's disease	sarcopenia	5
+ad	sarcopenia	5
+alzheimer's disease	pd	4
+alzheimer's disease	bvftd	4
+ad	bvftd	4

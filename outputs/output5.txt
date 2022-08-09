@@ -1,0 +1,5 @@
+0,206,231,Mild Cognitive Impairment,Disease,MESH:D060825
+0,236,255,Alzheimer's disease,Disease,MESH:D000544
+0,456,479,cholinergic dysfunction,Disease,MESH:D004194
+0,864,888,verbal fluency anomalies,Disease,MESH:D013064
+

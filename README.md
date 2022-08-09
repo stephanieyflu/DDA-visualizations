@@ -250,6 +250,8 @@ For the `DisGeNET.tsv`:
 Input format:
 - Place all abstracts in the `input_files` folder as individual .txt files
 - The title of the abstract can also be included in the .txt file
+Command line example:
+- python sicknessminer/main.py --raw input_files outputs
 
 ## Resources
 

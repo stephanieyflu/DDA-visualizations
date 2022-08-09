@@ -20,6 +20,7 @@ The main entry point.
 import argparse
 import datetime
 import os
+from re import S
 import traceback
 from os.path import expanduser
 from subprocess import check_output
@@ -387,43 +388,50 @@ def main(input_paths, output_path, raw=False):
 
 def process_output(output, dict):
 
-    # Make a copy of the file
-    fp = open("copy.txt", 'x')
+    # Make a copy of the file - what if I just don't make a copy since it's so difficult...
+    # fp = open("copy.txt", 'x')
     output_dir = "./outputs/" + output
-    shutil.copyfile(output_dir, "copy.txt") # if copy.txt already exists, this causes an error
+    # shutil.copyfile(output_dir, "copy.txt") # if copy.txt already exists, this causes an error
 
-    fp.close()
+    # fp.close()
 
     # Delete first two lines of the file (title and abstract)
     lines = []
-    with open("copy.txt", 'r') as fp:
+    with open(output_dir, 'r') as fp:
         lines = fp.readlines()
 
-    with open("copy.txt", 'w') as fp:
+    with open(output_dir, 'w') as fp:
         for number, line in enumerate(lines):
             if number not in [0, 1]:
                 fp.write(line)
 
+    # Replace commas with hyphens (in disease names...?)
+    fp = open(output_dir, 'r')
+    data = fp.read()
+    data = data.replace(', ', '-')
+    fp.close()
+
     # Replace tabs with commas
-    fp = open("copy.txt", 'r')
+    fp = open(output_dir, 'r')
     data = fp.read()
     data = data.replace('\t', ',')
     fp.close()
 
-    fp = open("copy.txt", 'w')
+    fp = open(output_dir, 'w')
     fp.write(data)
     fp.close()
 
     # Convert copy.txt to copy.csv
 
     # Won't work for diseases with commas -> try to figure out *.tsv
+    # Ideas: delete all commas from the *.txt file?
 
-    read_file = pd.read_csv("copy.txt")
-    read_file.to_csv("copy.csv", index=None)
+    read_file = pd.read_csv(output_dir)
+    read_file.to_csv("current_output.csv", index=None)
 
     # Put into a dataframe
     names = ['ID', 'Start', 'End', 'Disease', 'Type', 'MESH']
-    df = pd.read_csv("copy.csv", names=names)
+    df = pd.read_csv("current_output.csv", names=names)
 
     # Extract the Disease column
     diseases = df[df.columns[3]].str.lower() # change all to LOWERCASE
@@ -456,8 +464,8 @@ def process_all_outputs(folder, dict):
   	'''
     for file in os.listdir(folder):
         dict = process_output(file, dict)
-        os.remove("copy.txt")
-        os.remove("copy.csv")
+        # os.remove("copy.txt")
+        os.remove("current_output.csv")
     return dict
 
 def retrieve_top_outputs(num, dict):
@@ -520,9 +528,11 @@ def make_graph(target_diseases, num):
 def get_inputs(disease, start_year, end_year, max_files):
     fetch = PubMedFetcher()
 
-    # Delete all contents of input_files
+    # Delete all contents of input_files and outputs
     for file in os.listdir('input_files'):
         os.remove(os.path.join('input_files', file))
+    for file in os.listdir('outputs'):
+        os.remove(os.path.join('outputs', file))
     print("All previous files removed")
 
     count = 1
@@ -549,12 +559,14 @@ def get_inputs(disease, start_year, end_year, max_files):
                 if count > max_files:
                     break # stop when we have 100 articles
         if count > max_files:
-            print("Early stop at 100 articles")
+            print("Early stop at " + str(max_files) + " articles")
             break
 
     print("Total number of successful articles:", count-1)
 
 if __name__ == '__main__':
+    st = datetime.datetime.now()
+    
     parser = create_arguments_parser()
     arguments = parser.parse_args()
 
@@ -562,8 +574,8 @@ if __name__ == '__main__':
         raise Exception(f"At least two arguments are expected. Found:\t"
                         f"{arguments.files}")
 
-    input_files = arguments.files[:-1]
-    output_file = arguments.files[-1]
+    input_folder = arguments.files[:-1] # will be a list of input files, but I changed it to just one folder with files
+    output_folder = arguments.files[-1]
     raw_files = arguments.raw
     # main(input_files, output_file, raw=raw_files)
 
@@ -571,19 +583,25 @@ if __name__ == '__main__':
     disease = "alzheimer's"
     start_year = 2022
     end_year = 2022
-    max_files = 100
+    max_files = 8 # takes a really long time :') also if there is an error, it just skips that file; why are there errors though?
     get_inputs(disease, start_year, end_year, max_files)
 
     # Run the code for each abstract
     count = 1
-    for input_file in os.listdir("input_files"): 
-        output_file = "outputs/output" + str(count) + ".txt"
+    for file in os.listdir(input_folder[0]): 
+        input_file = input_folder[0] + "/" + file
+        output_file = output_folder + "/output" + str(count) + ".txt"
         main(input_file, output_file, raw=raw_files)
         count += 1
-
+    
     # Specify the target diseases and the number of top results to be displayed
-    target_diseases = ["alzheimer's"]  # change this to be whatever you want, make it all lowercase
+    target_diseases = ["alzheimer's disease", "ad"]  # change this to be whatever you want, make it all lowercase
     num = 5
 
     # Create the knowledge graph based on the output files in the outputs folder
     make_graph(target_diseases, num)
+
+    et = datetime.datetime.now()
+
+    elapsed_time = et - st 
+    print("Total elapsed time:", elapsed_time)

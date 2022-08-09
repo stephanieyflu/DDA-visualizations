@@ -167,6 +167,7 @@ The example below includes a possible valid path:
 
 ```
 export CONDA_ENV=~/anaconda3/envs/entity_normalization/bin/python
+export CONDA_ENV=~/anaconda3/envs/entity_normalization/python
 ```
 
 ### Example
@@ -243,6 +244,12 @@ For the `DisGeNET.tsv`:
    target disease and the set of genes related to the associated disease;
 6. MESH_id: the MeSH id of the associated disease, if known;
 7. OMIN_id: the OMIN id of the associated disease, if known.
+
+## Additional Notes by Stephanie
+
+Input format:
+- Place all abstracts in the `input_files` folder as individual .txt files
+- The title of the abstract can also be included in the .txt file
 
 ## Resources
 

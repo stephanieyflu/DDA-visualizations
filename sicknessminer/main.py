@@ -40,6 +40,17 @@ from sicknessminer.pubtator.conll2pubtator import ConllIterator, \
 from sicknessminer.pubtator.utils import PubTatorIterator, RawTextToPubTator
 from sicknessminer.util import split_sentences
 
+# added by me
+import pandas as pd # had to install
+import networkx as nx # had to install
+import matplotlib.pyplot as plt
+import seaborn as sns # had to install
+import shutil
+from metapub import PubMedFetcher # pip install metapub
+import datetime
+
+sns.set_theme()
+
 CLASS_NAME = "Disease"
 
 BERT_MODEL_PATH = "models/NER_SicknessMiner"
@@ -157,7 +168,8 @@ def read_bert_parameters(parameters_path):
 def create_biobert_model(bert_parameters) -> keras.Model:
     max_seq_len = bert_parameters["max_position_embeddings"]
 
-    bert_ckpt_file = find_last_model(BERT_MODEL_PATH, "model.ckpt-")
+    # bert_ckpt_file = find_last_model(BERT_MODEL_PATH, "model.ckpt-")
+    bert_ckpt_file = "models/NER_SicknessMiner\model.ckpt-1695"
     ckpt_reader = tf.train.load_checkpoint(bert_ckpt_file)
 
     l_bert = bert.BertModelLayer.from_params(bert_parameters, name="bert")
@@ -371,6 +383,176 @@ def main(input_paths, output_path, raw=False):
             normco_input_file.close()
         traceback.print_exc()
 
+# added by me
+
+def process_output(output, dict):
+
+    # Make a copy of the file
+    fp = open("copy.txt", 'x')
+    output_dir = "./outputs/" + output
+    shutil.copyfile(output_dir, "copy.txt") # if copy.txt already exists, this causes an error
+
+    fp.close()
+
+    # Delete first two lines of the file (title and abstract)
+    lines = []
+    with open("copy.txt", 'r') as fp:
+        lines = fp.readlines()
+
+    with open("copy.txt", 'w') as fp:
+        for number, line in enumerate(lines):
+            if number not in [0, 1]:
+                fp.write(line)
+
+    # Replace tabs with commas
+    fp = open("copy.txt", 'r')
+    data = fp.read()
+    data = data.replace('\t', ',')
+    fp.close()
+
+    fp = open("copy.txt", 'w')
+    fp.write(data)
+    fp.close()
+
+    # Convert copy.txt to copy.csv
+
+    # Won't work for diseases with commas -> try to figure out *.tsv
+
+    read_file = pd.read_csv("copy.txt")
+    read_file.to_csv("copy.csv", index=None)
+
+    # Put into a dataframe
+    names = ['ID', 'Start', 'End', 'Disease', 'Type', 'MESH']
+    df = pd.read_csv("copy.csv", names=names)
+
+    # Extract the Disease column
+    diseases = df[df.columns[3]].str.lower() # change all to LOWERCASE
+
+    present_targets = []
+
+    # Check to see which target diseases are in the text
+    # REMEMBER TO CONSIDER LOWER AND UPPER CASE LATER -> DONE! (see 6 lines above)
+    for target in target_diseases:
+        for disease in diseases:
+            if target == disease and target not in present_targets:
+                present_targets.append(target)
+
+    # Right now, the below will count more than one co-mention for each abstract/title
+    for disease in diseases:
+        if disease in present_targets:
+            continue
+        for target in present_targets:
+            if disease not in dict[target]:
+                dict[target][disease] = 1
+            else:
+                dict[target][disease] += 1
+
+    return dict
+
+def process_all_outputs(folder, dict):
+    '''
+ 	folder = folder with all the abstract files
+  	dict = empty initialized dictionary
+  	'''
+    for file in os.listdir(folder):
+        dict = process_output(file, dict)
+        os.remove("copy.txt")
+        os.remove("copy.csv")
+    return dict
+
+def retrieve_top_outputs(num, dict):
+	'''
+	num = number of top outputs to retrieve
+	dict = processed dictionary
+ 	returns a list of the top co-mentioned diseases
+	creates a *.tsv (?) file of the top co-mentioned diseases
+	'''
+	list = []
+	for key in dict.keys():
+		for sub_key in dict[key].keys():
+			list.append((key, sub_key, dict[key][sub_key]))
+	
+	sorted_list = sorted(list, key=lambda tup:tup[2], reverse=True)
+	top_list = sorted_list[:num]
+
+	with open("top.txt", 'w') as fp:
+		for tuple in top_list:
+			item_num = 1
+			for item in tuple:
+				if item_num != 3:
+					fp.write("%s\t" % item)
+				else:
+					fp.write("%s\n" % item)
+				item_num += 1
+		
+	return top_list
+
+def make_graph(target_diseases, num):
+    dict = {}
+    for target in target_diseases:
+        dict[target] = {}
+
+    dict = process_all_outputs("outputs", dict)
+
+    top_list = retrieve_top_outputs(num, dict)
+
+    file = "top.txt"
+    names = ['Index_disease', 'Associated_disease', 'Co-mentions']
+
+    df = pd.read_table(file, names=names)
+
+    source = df['Index_disease'].values.tolist()
+    target = df['Associated_disease'].values.tolist()
+    edge = df['Co-mentions'].values.tolist()
+
+    kg_df = pd.DataFrame({'source':source, 'target':target, 'edge':edge})
+
+    # Create a directed-graph from a dataframe
+    G = nx.from_pandas_edgelist(kg_df, "source", "target", 
+                                edge_attr=True, create_using=nx.MultiDiGraph())
+
+    plt.figure()
+    pos = nx.spring_layout(G)
+    # nx.draw(G, with_labels=True, node_color='skyblue', node_size=1500, edge_cmap=plt.cm.Blues, pos=pos)
+    nx.draw(G, with_labels=True, node_color='lightblue', node_size=1500, edge_color=edge, edge_cmap=plt.cm.GnBu, pos=pos)
+    plt.show()
+
+def get_inputs(disease, start_year, end_year, max_files):
+    fetch = PubMedFetcher()
+
+    # Delete all contents of input_files
+    for file in os.listdir('input_files'):
+        os.remove(os.path.join('input_files', file))
+    print("All previous files removed")
+
+    count = 1
+    for year in range(start_year, end_year+1): # choose some years
+
+        pmids = fetch.pmids_for_query(disease+" "+str(year)+"/01/01[MDAT] : "+str(year)+"/12/31[MDAT]", retmax=10000000)
+        print("Number of articles in " +  str(year) + ': ' + str(len(pmids)))
+
+        for pmid in pmids:
+            article = fetch.article_by_pmid(pmid)
+            title = article.title
+            abstract = article.abstract
+            if (title == None) or (abstract == None):
+                continue
+            else:
+                # Write into a text file
+                file_path = 'input_files/input' + str(count) + '.txt'
+                with open(file_path, 'w') as text_file:
+                    text = title + abstract
+                    text = str(text.encode("utf-8")) # this line and the next don't work perfectly for fixing the error that occurs when a title/abstract has special characters
+                    text = text[2:len(text)-1] # when converting back to string, a b"" is added around the text
+                    text_file.write(text)
+                count += 1
+                if count > max_files:
+                    break # stop when we have 100 articles
+        if count > max_files:
+            print("Early stop at 100 articles")
+            break
+
+    print("Total number of successful articles:", count-1)
 
 if __name__ == '__main__':
     parser = create_arguments_parser()
@@ -383,4 +565,25 @@ if __name__ == '__main__':
     input_files = arguments.files[:-1]
     output_file = arguments.files[-1]
     raw_files = arguments.raw
-    main(input_files, output_file, raw=raw_files)
+    # main(input_files, output_file, raw=raw_files)
+
+    # Save search results from PubMed
+    disease = "alzheimer's"
+    start_year = 2022
+    end_year = 2022
+    max_files = 100
+    get_inputs(disease, start_year, end_year, max_files)
+
+    # Run the code for each abstract
+    count = 1
+    for input_file in os.listdir("input_files"): 
+        output_file = "outputs/output" + str(count) + ".txt"
+        main(input_file, output_file, raw=raw_files)
+        count += 1
+
+    # Specify the target diseases and the number of top results to be displayed
+    target_diseases = ["alzheimer's"]  # change this to be whatever you want, make it all lowercase
+    num = 5
+
+    # Create the knowledge graph based on the output files in the outputs folder
+    make_graph(target_diseases, num)
